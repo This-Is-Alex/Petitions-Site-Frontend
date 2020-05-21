@@ -4,6 +4,7 @@ import App from './App.vue';
 import Register from './components/Register.vue';
 import Homepage from './components/Homepage.vue';
 import Login from './components/Login.vue';
+import Dashboard from './components/Dashboard.vue';
 import SearchPetitions from './components/SearchPetitions.vue';
 import DisplayOnePetition from './components/DisplayOnePetition.vue';
 
@@ -41,6 +42,11 @@ const routes = [{
         path: "/register",
         name: "registerPage",
         component: Register
+    },
+    {
+        path: "/dashboard",
+        name: "dashboard",
+        component: Dashboard
     }
 ];
 

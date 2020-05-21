@@ -8,7 +8,7 @@ const instance = axios.create({
     timeout: 30000,
 });
 
-axios.interceptors.request.use(function(config) {
+instance.interceptors.request.use(function(config) {
     const token = localStorage.getItem("token") || "";
     config.headers["X-Authorization"] = token;
     return config;
@@ -34,7 +34,7 @@ export async function getPetitionInfo(id) {
         return res.data;
     } catch (e) {
         console.error(e);
-        return [];
+        return {};
     }
 }
 
@@ -64,4 +64,42 @@ export async function getCategories() {
         console.error(e);
         return [];
     }
+}
+
+export async function register(requestBody) {
+    try {
+        let res = await instance.post(`/users/register`, requestBody);
+        if (res.status != 201) {
+            return res.statusText;
+        } else {
+            return res.data.userId;
+        }
+    } catch (e) {
+        console.error(e);
+        return "A network error occured";
+    }
+}
+
+export async function login(email, password) {
+    let res = await instance.post('/users/login', { email, password })
+    if (res.status === 200) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("userId", res.data.userId);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+export async function uploadProfilePhoto(userId, file) {
+    uploadPhoto("/users/" + userId + "/photo", file);
+}
+
+async function uploadPhoto(endpoint, file) {
+    let res = await instance.put(endpoint, file, {
+        headers: {
+            'Content-Type': file.type
+        }
+    })
+    return res.status === 200;
 }
