@@ -38,6 +38,16 @@ export async function getPetitionInfo(id) {
     }
 }
 
+export async function getUserInfo(id) {
+    try {
+        let res = await instance.get(`/users/${id}`);
+        return res.data;
+    } catch (e) {
+        console.error(e);
+        return {};
+    }
+}
+
 export async function getPetitionSignatures(id) {
     try {
         let res = await instance.get(`/petitions/${id}/signatures`);
@@ -91,8 +101,19 @@ export async function login(email, password) {
     }
 }
 
+export async function logout() {
+    let res = await instance.post('/users/logout')
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    if (res.status === 200) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 export async function uploadProfilePhoto(userId, file) {
-    uploadPhoto("/users/" + userId + "/photo", file);
+    await uploadPhoto("/users/" + userId + "/photo", file);
 }
 
 async function uploadPhoto(endpoint, file) {

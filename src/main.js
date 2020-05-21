@@ -6,6 +6,7 @@ import Homepage from './components/Homepage.vue';
 import Login from './components/Login.vue';
 import Dashboard from './components/Dashboard.vue';
 import SearchPetitions from './components/SearchPetitions.vue';
+import ManagePetition from './components/ManagePetition.vue';
 import DisplayOnePetition from './components/DisplayOnePetition.vue';
 
 import vuetify from './plugins/vuetify';
@@ -32,6 +33,16 @@ const routes = [{
         path: "/search",
         name: "searchPage",
         component: SearchPetitions
+    },
+    {
+        path: "/petition/create",
+        name: "createPetition",
+        component: ManagePetition
+    },
+    {
+        path: "/petition/:petitionId/edit",
+        name: "editPetition",
+        component: ManagePetition
     },
     {
         path: "/petition/:petitionId",

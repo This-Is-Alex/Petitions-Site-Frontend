@@ -75,7 +75,7 @@
                       <v-btn
                         color="primary"
                         @click="register()"
-                        :disabled="!(allValid || submitting)"
+                        :disabled="!(allValid || !submitting)"
                       >Register</v-btn>
                     </v-row>
                   </v-container>
@@ -153,7 +153,7 @@ export default {
       if (typeof this.file !== "string") {
         await Requests.uploadProfilePhoto(userId, this.file);
       }
-      this.$emit("authentication-change");
+      this.$root.$emit("authentication-change");
       this.$router.push({name: "dashboard"});
     },
     showError: function(message) {

@@ -1,45 +1,49 @@
 <template>
-  <v-app id="inspire">
+  <div>
     <v-content>
-      <v-container fluid>
+      <v-snackbar v-model="errorFlag" color="error" timeout="6000" top>{{ error }}</v-snackbar>
+      <v-container fluid fill-height>
         <v-row align="center" justify="center">
-          <v-col cols="12" sm="8" md="4">
-            <v-card class="elevation-12">
-              <v-toolbar color="primary" dark flat>
-                <v-toolbar-title>Login form</v-toolbar-title>
-                <v-spacer></v-spacer>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn :href="source" icon large target="_blank" v-on="on">
-                      <v-icon>mdi-code-tags</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Source</span>
-                </v-tooltip>
-              </v-toolbar>
-              <v-card-text>
-                <v-form>
-                  <v-text-field label="Login" name="login" prepend-icon="person" type="text"></v-text-field>
-
-                  <v-text-field
-                    id="password"
-                    label="Password"
-                    name="password"
-                    prepend-icon="lock"
-                    type="password"
-                  ></v-text-field>
-                </v-form>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="primary">Login</v-btn>
-              </v-card-actions>
-            </v-card>
+          <v-col lg="6" md="8" sm="12">
+            <v-hover v-slot="{ hover }">
+              <v-card :elevation="hover ? 6 : 2">
+                <v-toolbar color="blue" dark flat>
+                  <v-toolbar-title>Login</v-toolbar-title>
+                </v-toolbar>
+                <v-card-text class="pa-4">
+                  <v-container>
+                    <v-row justify="center">
+                      <v-col cols="12" sm="8">
+                        <v-text-field
+                          v-model="input.email"
+                          label="Email address"
+                          prepend-icon="alternate_email"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row justify="center">
+                      <v-col cols="12" sm="8">
+                        <v-text-field
+                          v-model="input.password"
+                          label="Password"
+                          type="password"
+                          prepend-icon="lock"
+                          @keyup.enter.native="login()"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                    <v-row justify="center">
+                      <v-btn color="primary" @click="login()" :disabled="submitting">Login</v-btn>
+                    </v-row>
+                  </v-container>
+                </v-card-text>
+              </v-card>
+            </v-hover>
           </v-col>
         </v-row>
       </v-container>
     </v-content>
-  </v-app>
+  </div>
 </template>
 
 <script>
@@ -48,17 +52,31 @@ import * as Requests from "../utils/requests";
 export default {
   data() {
     return {
-      error: "",
       errorFlag: false,
-      petitions: []
+      error: "",
+      input: {
+        email: "",
+        password: ""
+      },
+      submitting: false
     };
   },
-  mounted: function() {
-    this.getPetitions();
-  },
   methods: {
-    getPetitions: async function() {
-      this.petitions = await Requests.getPetitions();
+    login: async function() {
+      this.submitting = true;
+
+      let result = await Requests.login(this.input.email, this.input.password);
+      if (result === true) {
+        this.$root.$emit("authentication-change");
+        this.$router.push({ name: "dashboard" });
+      } else {
+        this.errorFlag = true;
+        this.error = "Invalid email/password";
+      }
+    },
+    showError: function(message) {
+      this.errorFlag = true;
+      this.error = message;
     }
   }
 };
