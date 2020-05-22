@@ -33,7 +33,9 @@
                       </v-col>
                     </v-row>
                     <v-row justify="center">
-                      <v-btn color="primary" @click="login()" :disabled="submitting">Login</v-btn>
+                      <v-btn @click="go('registerPage')" :disabled="submitting" class="ma-1">Sign Up</v-btn>
+                      <v-btn @click="go('searchPage')" :disabled="submitting" class="ma-1">Continue as guest</v-btn>
+                      <v-btn color="primary" @click="login()" :disabled="submitting" class="ma-1">Login</v-btn>
                     </v-row>
                   </v-container>
                 </v-card-text>
@@ -81,6 +83,14 @@ export default {
     showError: function(message) {
       this.errorFlag = true;
       this.error = message;
+    },
+    go: function(pageName) {
+      this.$router.push({name: pageName});
+    }
+  },
+  mounted: async function() {
+    if (localStorage.getItem('userId') != null) {
+      this.go('yourProfile');
     }
   }
 };

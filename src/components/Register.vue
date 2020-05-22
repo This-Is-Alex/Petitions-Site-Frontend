@@ -72,8 +72,10 @@
                       </v-col>
                     </v-row>
                     <v-row justify="center">
+                      <v-btn @click="go('loginPage')" class="ma-1">Have an account? Login</v-btn>
                       <v-btn
                         color="primary"
+                        class="ma-1"
                         @click="register()"
                         :disabled="!(allValid || !submitting)"
                       >Register</v-btn>
@@ -180,6 +182,9 @@ export default {
     },
     updatedProfilePhoto(file) {
       this.file = file;
+    },
+    go: function(pageName) {
+      this.$router.push({name: pageName});
     }
   },
   watch: {

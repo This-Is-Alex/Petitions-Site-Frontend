@@ -19,6 +19,10 @@ instance.interceptors.response.use((response) => {
 }, async(error) => {
     let errorData = await Promise.resolve({ error });
     errorData.status = errorData.error.response.status;
+    if (errorData.status == 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+    }
     return errorData;
 });
 

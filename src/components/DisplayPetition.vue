@@ -12,10 +12,15 @@
           <v-toolbar-title>{{petitionData.title}}</v-toolbar-title>
           <v-spacer />
           <div style="text-align: right;">
-            <v-chip v-if="thisIsOurPetition" class="ml-2" light @click="deleteThisPetition()">
+            <v-chip v-if="expanded && thisIsOurPetition" class="ml-2" light @click="deleteThisPetition()">
               <v-icon class="mr-1">delete</v-icon>Delete
             </v-chip>
-            <v-chip v-if="thisIsOurPetition" class="ml-2" light @click="editThisPetition()">
+            <v-chip
+              v-if="expanded && thisIsOurPetition && extendedPetition && ((extendedPetition.closingDate && new Date(extendedPetition.closingDate) > new Date()) || !extendedPetition.closingDate)"
+              class="ml-2"
+              light
+              @click="editThisPetition()"
+            >
               <v-icon class="mr-1">edit</v-icon>Edit
             </v-chip>
             <v-chip class="ml-2" color="white" outlined>{{petitionData.category}}</v-chip>
@@ -94,13 +99,14 @@
                           </v-sheet>
                           <v-sheet class="mr-2">
                             Started
-                            <div v-if="extendedPetition.closingDate">{{(new Date(extendedPetition.closingDate) > new Date()) ? 'Closes' : 'Closed'}}</div>
+                            <div>{{(extendedPetition.closingDate && new Date() > new Date(extendedPetition.closingDate)) ? 'Closed' : 'Closes'}}</div>
                           </v-sheet>
                           <v-sheet>
                             {{new Date(extendedPetition.createdDate).toLocaleDateString("en-US", {year: 'numeric', month: 'long', day: 'numeric'})}}
                             <div
                               v-if="extendedPetition.closingDate"
                             >{{new Date(extendedPetition.closingDate).toLocaleDateString("en-US", {year: 'numeric', month: 'long', day: 'numeric'})}}</div>
+                            <div v-else>Never (continuous)</div>
                           </v-sheet>
                         </v-row>
                       </v-col>
@@ -111,13 +117,13 @@
             </v-card>
           </v-expand-transition>
           <v-expand-transition>
-            <v-card v-show="expandSignatures" color="white" tile class="elevation-0">
+            <v-card v-if="expandSignatures" color="white" tile class="elevation-0">
               <v-container class="pa-8 pr-0">
                 <div v-if="hasSigned">
                   <v-btn
                     color="red"
                     @click="signThisPetition(false)"
-                    :disabled="new Date(extendedPetition.closingDate) < new Date() || thisIsOurPetition"
+                    :disabled="extendedPetition.closingDate && new Date(extendedPetition.closingDate) < new Date() || thisIsOurPetition"
                   >
                     <v-icon>delete</v-icon>Remove your signature
                   </v-btn>
@@ -126,12 +132,14 @@
                   <v-btn
                     color="green"
                     @click="signThisPetition(true)"
-                    :disabled="new Date(extendedPetition.closingDate) < new Date()"
+                    :disabled="extendedPetition.closingDate && new Date(extendedPetition.closingDate) < new Date()"
                   >
                     <v-icon>edit</v-icon>Sign this petition
                   </v-btn>
                 </div>
-                <div v-if="new Date(extendedPetition.closingDate) < new Date()">This petition has closed</div>
+                <div
+                  v-if="extendedPetition.closingDate && new Date(extendedPetition.closingDate) < new Date()"
+                >This petition has closed</div>
                 <div v-if="thisIsOurPetition">Cannot remove signature from your own petition</div>
                 <v-list three-line height="350" class="scroll pl-8">
                   <template v-for="item in signatures">

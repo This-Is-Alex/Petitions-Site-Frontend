@@ -73,7 +73,7 @@
                           <v-col>
                             <v-file-input
                               accept="image/png, image/jpeg, image/gif"
-                              placeholder="Pick a hero image (leave blank for no image or to keep current image)"
+                              placeholder="Pick a hero image (if editing, leave blank to keep current image)"
                               prepend-icon="camera_alt"
                               label="Hero image"
                               ref="filePicker"
@@ -153,6 +153,9 @@ export default {
           return false;
         }
       }
+      if (!this.editing && typeof this.file === "string") {
+        return false;
+      }
       return true;
     },
     allowedDates: function(val) {
@@ -217,7 +220,7 @@ export default {
       this.submitting = false;
     },
     cancel: function() {
-      this.$router.push("/petition/"+ this.petitionId);
+      this.$router.push("/petition/" + this.petitionId);
     }
   },
   mounted: async function() {
@@ -225,6 +228,8 @@ export default {
       this.$router.push({ name: "loginPage" });
       return;
     }
+
+    this.categories = await Requests.getCategories();
 
     if (this.$route.params.petitionId) {
       this.petitionId = this.$route.params.petitionId;
@@ -263,7 +268,6 @@ export default {
         this.showError("Somehow the backend returned the wrong petition");
       }
     }
-    this.categories = await Requests.getCategories();
   },
   watch: {
     input: {
@@ -271,6 +275,11 @@ export default {
         this.allValid = this.validateAll() === true;
       },
       deep: true
+    },
+    file: {
+      handler: function() {
+        this.allValid = this.validateAll() === true;
+      }
     }
   }
 };

@@ -12,7 +12,7 @@
                 <v-card-text class="pa-4">
                   Hello!
                   <br />If you're logged in then wait a second while we work out who you are, otherwise you can
-                  <router-link to="/register">Sign Up</router-link> or
+                  <router-link to="/register">Sign Up</router-link>or
                   <router-link to="/login">Login</router-link>
                 </v-card-text>
               </v-card>
@@ -26,11 +26,13 @@
 
 <script>
 export default {
-    mounted: function() {
-        let userId = localStorage.getItem("userId");
-        if (userId !== null && userId !== undefined) {
-            this.$router.push({name: "yourProfile"})
-        }
+  mounted: function() {
+    let userId = localStorage.getItem("userId");
+    if (userId !== null && userId !== undefined) {
+      this.$router.push({ name: "yourProfile" });
+    } else {
+      this.$router.push({ name: "loginPage" });
     }
-}
+  }
+};
 </script>
