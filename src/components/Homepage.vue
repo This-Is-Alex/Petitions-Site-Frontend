@@ -29,7 +29,7 @@ export default {
     mounted: function() {
         let userId = localStorage.getItem("userId");
         if (userId !== null && userId !== undefined) {
-            this.$router.push({name: "dashboard"})
+            this.$router.push({name: "yourProfile"})
         }
     }
 }

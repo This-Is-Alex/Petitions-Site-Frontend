@@ -68,7 +68,7 @@ export default {
       let result = await Requests.login(this.input.email, this.input.password);
       if (result === true) {
         this.$root.$emit("authentication-change");
-        this.$router.push({ name: "dashboard" });
+        this.$router.push({ name: "yourProfile" });
       } else {
         this.errorFlag = true;
         this.error = "Invalid email/password";

@@ -2,7 +2,11 @@
   <div id="app">
     <v-app>
       <v-app-bar color="primary" dark app>
-        <v-toolbar-title>Petition365</v-toolbar-title>
+        <v-toolbar-title>
+          <v-btn fab color="primary" elevation="0" @click.stop="drawer = !drawer">
+            <v-icon>menu</v-icon>
+          </v-btn>Petition365
+        </v-toolbar-title>
         <v-spacer></v-spacer>
         <div>{{isLoggedIn ? currentName : "Guest"}}</div>
         <div>
@@ -28,6 +32,9 @@
               <v-list-item v-if="!isLoggedIn" @click="go('registerPage')">
                 <v-list-item-title>Sign Up</v-list-item-title>
               </v-list-item>
+              <v-list-item v-if="isLoggedIn" @click="go('yourProfile')">
+                <v-list-item-title>Your Profile</v-list-item-title>
+              </v-list-item>
               <v-list-item v-if="isLoggedIn" @click="logout()">
                 <v-list-item-title>Logout</v-list-item-title>
               </v-list-item>
@@ -40,6 +47,45 @@
           <router-view v-if="!isTransitioning"></router-view>
         </transition>
       </v-content>
+      <v-navigation-drawer v-model="drawer" fixed temporary>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title>Navigation</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-divider></v-divider>
+
+        <v-list dense>
+          <v-list-item @click="drawer = false">
+            <v-list-item-avatar>
+              <v-icon>close</v-icon>
+            </v-list-item-avatar>
+
+            <v-list-item-content>
+              <v-list-item-title>Hide Menu</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item @click="go('searchPage')">
+            <v-list-item-avatar>
+              <v-icon>search</v-icon>
+            </v-list-item-avatar>
+
+            <v-list-item-content>
+              <v-list-item-title>Search Petitions</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item v-if="isLoggedIn" @click="go('createPetition')">
+            <v-list-item-avatar>
+              <v-icon>add</v-icon>
+            </v-list-item-avatar>
+
+            <v-list-item-content>
+              <v-list-item-title>Create a Petition</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
     </v-app>
   </div>
 </template>
@@ -54,6 +100,7 @@ export default {
       isLoggedIn: false,
       currentName: "Logging in",
       profilePhotoUrl: "",
+      drawer: false,
       lazyPhoto:
         "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiIHdpZHRoPSIxOHB4IiBoZWlnaHQ9IjE4cHgiPjxwYXRoIGQ9Ik0xMiAyQzYuNDggMiAyIDYuNDggMiAxMnM0LjQ4IDEwIDEwIDEwIDEwLTQuNDggMTAtMTBTMTcuNTIgMiAxMiAyem0wIDNjMS42NiAwIDMgMS4zNCAzIDNzLTEuMzQgMy0zIDMtMy0xLjM0LTMtMyAxLjM0LTMgMy0zem0wIDE0LjJjLTIuNSAwLTQuNzEtMS4yOC02LTMuMjIuMDMtMS45OSA0LTMuMDggNi0zLjA4IDEuOTkgMCA1Ljk3IDEuMDkgNiAzLjA4LTEuMjkgMS45NC0zLjUgMy4yMi02IDMuMjJ6Ii8+PHBhdGggZD0iTTAgMGgyNHYyNEgweiIgZmlsbD0ibm9uZSIvPjwvc3ZnPg=="
     };
@@ -94,7 +141,13 @@ export default {
       this.profilePhotoUrl = this.lazyPhoto;
     },
     async logout() {
-      await Requests.logout();
+      try {
+        await Requests.logout();
+      } catch (err) {
+        console.log(err);
+      }
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
       this.updateAuth();
       this.$router.push({ name: "loginPage" });
     }

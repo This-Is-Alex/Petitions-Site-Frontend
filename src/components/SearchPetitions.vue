@@ -154,13 +154,11 @@ export default {
       if (this.sortBy.length > 0) {
         let sortMethod = null;
         for (let type in sortingTypes) {
-          console.log(sortingTypes[type].name + "=" + this.sortBy);
           if (sortingTypes[type].name == this.sortBy) {
             sortMethod = sortingTypes[type].value;
             break;
           }
         }
-        console.log(sortMethod);
         params["sortBy"] = sortMethod;
       }
 
@@ -172,7 +170,6 @@ export default {
             break;
           }
         }
-        console.log(filterCategory);
         params["categoryId"] = filterCategory;
       }
 

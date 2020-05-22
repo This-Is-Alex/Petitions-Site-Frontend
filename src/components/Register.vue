@@ -154,7 +154,7 @@ export default {
         await Requests.uploadProfilePhoto(userId, this.file);
       }
       this.$root.$emit("authentication-change");
-      this.$router.push({name: "dashboard"});
+      this.$router.push({name: "yourProfile"});
     },
     showError: function(message) {
       this.errorFlag = true;

@@ -58,6 +58,32 @@ export async function getPetitionSignatures(id) {
     }
 }
 
+export async function signPetition(id) {
+    if (localStorage.getItem("userId") == null) {
+        return false;
+    }
+    try {
+        let res = await instance.post(`/petitions/${id}/signatures`);
+        return res.status == 201;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+}
+
+export async function unSignPetition(id) {
+    if (localStorage.getItem("userId") == null) {
+        return false;
+    }
+    try {
+        let res = await instance.delete(`/petitions/${id}/signatures`);
+        return res.status == 200;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+}
+
 export function getUserPhotoUrl(authorId) {
     return SERVER_URL + "/users/" + authorId + "/photo"
 }
@@ -90,6 +116,48 @@ export async function register(requestBody) {
     }
 }
 
+export async function createPetition(requestBody) {
+    try {
+        let res = await instance.post(`/petitions`, requestBody);
+        if (res.status != 201) {
+            return res.statusText;
+        } else {
+            return res.data.petitionId;
+        }
+    } catch (e) {
+        console.error(e);
+        return "Error";
+    }
+}
+
+export async function updatePetition(requestBody, petitionId) {
+    try {
+        let res = await instance.patch(`/petitions/${petitionId}`, requestBody);
+        if (res.status != 200) {
+            return res.statusText;
+        } else {
+            return petitionId;
+        }
+    } catch (e) {
+        console.error(e);
+        return "Error";
+    }
+}
+
+export async function deletePetition(petitionId) {
+    try {
+        let res = await instance.delete(`/petitions/${petitionId}`);
+        if (res.status != 200) {
+            return res.statusText;
+        } else {
+            return true;
+        }
+    } catch (e) {
+        console.error(e);
+        return "Error";
+    }
+}
+
 export async function login(email, password) {
     let res = await instance.post('/users/login', { email, password })
     if (res.status === 200) {
@@ -114,6 +182,10 @@ export async function logout() {
 
 export async function uploadProfilePhoto(userId, file) {
     await uploadPhoto("/users/" + userId + "/photo", file);
+}
+
+export async function uploadPetitionPhoto(petitionId, file) {
+    await uploadPhoto("/petitions/" + petitionId + "/photo", file);
 }
 
 async function uploadPhoto(endpoint, file) {

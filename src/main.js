@@ -4,10 +4,10 @@ import App from './App.vue';
 import Register from './components/Register.vue';
 import Homepage from './components/Homepage.vue';
 import Login from './components/Login.vue';
-import Dashboard from './components/Dashboard.vue';
 import SearchPetitions from './components/SearchPetitions.vue';
 import ManagePetition from './components/ManagePetition.vue';
 import DisplayOnePetition from './components/DisplayOnePetition.vue';
+import YourProfile from './components/YourProfile.vue';
 
 import vuetify from './plugins/vuetify';
 import VueRouter from 'vue-router';
@@ -55,9 +55,9 @@ const routes = [{
         component: Register
     },
     {
-        path: "/dashboard",
-        name: "dashboard",
-        component: Dashboard
+        path: "/profile",
+        name: "yourProfile",
+        component: YourProfile
     }
 ];
 

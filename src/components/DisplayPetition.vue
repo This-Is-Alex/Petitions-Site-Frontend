@@ -12,6 +12,12 @@
           <v-toolbar-title>{{petitionData.title}}</v-toolbar-title>
           <v-spacer />
           <div style="text-align: right;">
+            <v-chip v-if="thisIsOurPetition" class="ml-2" light @click="deleteThisPetition()">
+              <v-icon class="mr-1">delete</v-icon>Delete
+            </v-chip>
+            <v-chip v-if="thisIsOurPetition" class="ml-2" light @click="editThisPetition()">
+              <v-icon class="mr-1">edit</v-icon>Edit
+            </v-chip>
             <v-chip class="ml-2" color="white" outlined>{{petitionData.category}}</v-chip>
             <div v-if="!expanded" class="ml-4">
               {{petitionData.authorName}}
@@ -73,8 +79,12 @@
                       <v-col cols="4">
                         <v-row justify="center" align="center">
                           <v-icon x-large class="mr-4">edit</v-icon>
-                          {{petitionData.signatureCount}} {{petitionData.signatureCount == 1 ? 'signature' : 'signatures'}}
-                          <v-btn outlined class="ml-4" @click="doExpandSignatures()">{{expandSignatures ? 'Hide' : 'Show'}}</v-btn>
+                          {{petitionData.signatureCount ? petitionData.signatureCount : '0'}} {{petitionData.signatureCount == 1 ? 'signature' : 'signatures'}}
+                          <v-btn
+                            outlined
+                            class="ml-4"
+                            @click="doExpandSignatures()"
+                          >{{expandSignatures ? 'Hide' : 'Show'}}</v-btn>
                         </v-row>
                       </v-col>
                       <v-col cols="4">
@@ -103,18 +113,26 @@
           <v-expand-transition>
             <v-card v-show="expandSignatures" color="white" tile class="elevation-0">
               <v-container class="pa-8 pr-0">
-                <v-list three-line max-height="350" class="scroll pl-8">
+                <v-list three-line height="350" class="scroll pl-8">
                   <template v-for="item in signatures">
                     <v-list-item :key="item.signedDate">
                       <v-list-item-avatar>
-                        <v-img :src="getAvatar(item.signatoryId)" :lazy-src="lazyProfilePhoto" @error="src = lazyProfilePhoto"></v-img>
+                        <v-img
+                          :src="getAvatar(item.signatoryId)"
+                          :lazy-src="lazyProfilePhoto"
+                          @error="src = lazyProfilePhoto"
+                        ></v-img>
                       </v-list-item-avatar>
 
                       <v-list-item-content>
                         <v-list-item-title>{{item.name}}</v-list-item-title>
-                        <v-list-item-subtitle>{{item.city && item.country ? 'From '+item.city+', '+item.country : ''}}
-                          {{item.country && !item.city ? 'From '+item.country : ''}}
-                          <br />Signed {{new Date(item.signedDate).toLocaleDateString("en-US", {year: 'numeric', month: 'long', day: 'numeric'})}}
+                        <v-list-item-subtitle>
+                          <div v-if="item.city || item.country">
+                            {{item.city && item.country ? 'From '+item.city+', '+item.country : ''}}
+                            {{item.country && !item.city ? 'From '+item.country : ''}}
+                            <br />
+                          </div>
+                          Signed {{new Date(item.signedDate).toLocaleDateString("en-US", {year: 'numeric', month: 'long', day: 'numeric'})}}
                         </v-list-item-subtitle>
                       </v-list-item-content>
                     </v-list-item>
@@ -190,7 +208,8 @@ import {
   getUserPhotoUrl,
   getPetitionPhotoUrl,
   getPetitionSignatures,
-  CLIENT_URL
+  CLIENT_URL,
+  deletePetition
 } from "../utils/requests";
 export default {
   props: ["petition"],
@@ -206,6 +225,7 @@ export default {
       authorPhotoUrl: "",
       petitionData: {},
       shareMenu: false,
+      thisIsOurPetition: false,
       lazyProfilePhoto:
         "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iZ3JheSIgd2lkdGg9IjE4cHgiIGhlaWdodD0iMThweCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTQuMmMtMi41IDAtNC43MS0xLjI4LTYtMy4yMi4wMy0xLjk5IDQtMy4wOCA2LTMuMDggMS45OSAwIDUuOTcgMS4wOSA2IDMuMDgtMS4yOSAxLjk0LTMuNSAzLjIyLTYgMy4yMnoiLz48cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+PC9zdmc+",
       lazyPhoto:
@@ -218,6 +238,8 @@ export default {
       if (this.extendedPetition == null) {
         this.extendedPetition = await getPetitionInfo(this.petitionId);
         this.authorPhotoUrl = getUserPhotoUrl(this.extendedPetition.authorId);
+        this.thisIsOurPetition =
+          this.extendedPetition.authorId == localStorage.getItem("userId");
       }
       if (!this.expanded) {
         this.expandSignatures = false;
@@ -227,7 +249,6 @@ export default {
       this.expandSignatures = !this.expandSignatures;
       if (this.signatures == null) {
         this.signatures = await getPetitionSignatures(this.petitionId);
-        console.log(this.signatures);
       }
     },
     imageFail: function(what) {
@@ -237,13 +258,30 @@ export default {
     },
     getAvatar: function(userId) {
       return getUserPhotoUrl(userId);
+    },
+    editThisPetition: function() {
+      this.$router.push("/petition/" + this.petitionId + "/edit");
+    },
+    deleteThisPetition: async function() {
+      let status = confirm("Are you sure you want to delete this petition?");
+      if (status === true) {
+        let result = await deletePetition(this.petitionId);
+        if (result) {
+          this.$router.push({ name: "yourProfile" });
+        }
+      }
     }
   },
   mounted: async function() {
     this.petitionId = this.petition.petitionId;
     this.petitionData = this.petition;
     this.permaLink = CLIENT_URL + "petition/" + this.petitionId;
-    this.photoUrl = getPetitionPhotoUrl(this.petitionId);
+    this.photoUrl =
+      getPetitionPhotoUrl(this.petitionId) + "?rand=" + Math.random();
+    if (this.petitionData.authorId) {
+      this.thisIsOurPetition =
+        this.petitionData.authorId == localStorage.getItem("userId");
+    }
   }
 };
 </script>
