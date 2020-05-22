@@ -63,6 +63,9 @@ export default {
   },
   methods: {
     login: async function() {
+      if (this.submitting) {
+        return;
+      }
       this.submitting = true;
 
       let result = await Requests.login(this.input.email, this.input.password);
@@ -73,6 +76,7 @@ export default {
         this.errorFlag = true;
         this.error = "Invalid email/password";
       }
+      this.submitting = false;
     },
     showError: function(message) {
       this.errorFlag = true;

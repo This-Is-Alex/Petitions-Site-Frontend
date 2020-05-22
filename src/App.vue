@@ -129,7 +129,7 @@ export default {
       if (userId === undefined || userId === null) {
         this.isLoggedIn = false;
       } else {
-        this.profilePhotoUrl = Requests.getUserPhotoUrl(userId);
+        this.profilePhotoUrl = Requests.getUserPhotoUrl(userId)+"?rand="+Math.random();
         this.isLoggedIn = true;
         let profile = await Requests.getUserInfo(userId);
         if (profile.name) {

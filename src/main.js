@@ -7,6 +7,7 @@ import Login from './components/Login.vue';
 import SearchPetitions from './components/SearchPetitions.vue';
 import ManagePetition from './components/ManagePetition.vue';
 import DisplayOnePetition from './components/DisplayOnePetition.vue';
+import EditYourProfile from './components/EditYourProfile.vue';
 import YourProfile from './components/YourProfile.vue';
 
 import vuetify from './plugins/vuetify';
@@ -58,6 +59,11 @@ const routes = [{
         path: "/profile",
         name: "yourProfile",
         component: YourProfile
+    },
+    {
+        path: "/editprofile",
+        name: "editProfile",
+        component: EditYourProfile
     }
 ];
 

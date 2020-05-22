@@ -8,7 +8,7 @@
             <v-hover v-slot="{ hover }">
               <v-card :elevation="hover ? 6 : 2">
                 <v-toolbar color="blue" dark flat>
-                  <v-toolbar-title>Register</v-toolbar-title>
+                  <v-toolbar-title>Editing your Profile</v-toolbar-title>
                 </v-toolbar>
                 <v-card-text class="pa-4">
                   <v-container>
@@ -32,17 +32,37 @@
                         ></v-text-field>
                       </v-col>
                     </v-row>
+                    <v-divider />
                     <v-row justify="center">
                       <v-col cols="12" sm="8">
-                        <v-text-field
-                          v-model="input.password"
-                          :rules="[rules.required]"
-                          label="Password"
-                          type="password"
-                          prepend-icon="lock"
-                        ></v-text-field>
+                        <v-switch v-model="editingPassword" label="Change your password"></v-switch>
                       </v-col>
                     </v-row>
+                    <v-expand-transition>
+                      <div v-if="editingPassword">
+                        <v-row justify="center">
+                          <v-col cols="12" sm="8">
+                            <v-text-field
+                              v-model="input.currentPassword"
+                              label="Current password"
+                              type="password"
+                              prepend-icon="lock"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                        <v-row justify="center">
+                          <v-col cols="12" sm="8">
+                            <v-text-field
+                              v-model="input.password"
+                              label="New password"
+                              type="password"
+                              prepend-icon="lock"
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </div>
+                    </v-expand-transition>
+                    <v-divider />
                     <v-row justify="center">
                       <v-col cols="12" sm="4">
                         <v-text-field
@@ -73,10 +93,15 @@
                     </v-row>
                     <v-row justify="center">
                       <v-btn
+                        class="mr-2"
+                        @click="cancel()"
+                        :disabled="!(allValid || !submitting)"
+                      >Cancel</v-btn>
+                      <v-btn
                         color="primary"
                         @click="register()"
                         :disabled="!(allValid || !submitting)"
-                      >Register</v-btn>
+                      >Save Changes</v-btn>
                     </v-row>
                   </v-container>
                 </v-card-text>
@@ -107,10 +132,12 @@ export default {
       input: {
         name: "",
         email: "",
+        currentPassword: "",
         password: "",
         city: "",
         country: ""
       },
+      editingPassword: false,
       submitting: false,
       allValid: false,
       file: ""
@@ -128,25 +155,22 @@ export default {
 
       let request = {
         name: this.input.name,
-        email: this.input.email,
-        password: this.input.password
+        email: this.input.email
       };
+      if (this.editingPassword) {
+        request["password"] = this.input.password;
+        request["currentPassword"] = this.input.currentPassword;
+      }
       if (this.input.country.length > 0) {
         request["country"] = this.input.country;
-        //assume city can only be present if country is
         if (this.input.city.length > 0) {
           request["city"] = this.input.city;
         }
       }
-      let userId = await Requests.register(request);
-      if (typeof userId === "string") {
+      let status = await Requests.updateUser(request);
+      if (typeof status === "string") {
         this.submitting = false;
-        this.showError(userId);
-        return;
-      }
-      if (!(await Requests.login(this.input.email, this.input.password))) {
-        this.showError("An unknown error occured");
-        this.submitting = false;
+        this.showError(status);
         return;
       }
 
@@ -154,7 +178,7 @@ export default {
         await Requests.uploadProfilePhoto(this.file);
       }
       this.$root.$emit("authentication-change");
-      this.$router.push({name: "yourProfile"});
+      this.$router.push({ name: "yourProfile" });
     },
     showError: function(message) {
       this.errorFlag = true;
@@ -170,8 +194,13 @@ export default {
       if (this.rules.email(this.input.email) !== true) {
         return "Invalid email address format";
       }
-      if (this.input.password.length == 0) {
-        return "Password cannot be empty";
+      if (this.editingPassword) {
+        if (this.input.currentPassword.length == 0) {
+          return "Current password cannot be empty";
+        }
+        if (this.input.password.length == 0) {
+          return "Password cannot be empty";
+        }
       }
       if (this.input.city.length > 0 && this.input.country.length == 0) {
         return "Country must be specified if City is specified";
@@ -180,6 +209,17 @@ export default {
     },
     updatedProfilePhoto(file) {
       this.file = file;
+    },
+    cancel: function() {
+      this.$router.push("/profile");
+    }
+  },
+  mounted: async function() {
+    let profile = await Requests.getUserInfo(localStorage.getItem("userId"));
+    for (let key in profile) {
+      if (profile[key] != null) {
+        this.input[key] = profile[key];
+      }
     }
   },
   watch: {

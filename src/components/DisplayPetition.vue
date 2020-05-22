@@ -94,7 +94,7 @@
                           </v-sheet>
                           <v-sheet class="mr-2">
                             Started
-                            <div v-if="extendedPetition.closingDate">Closes</div>
+                            <div v-if="extendedPetition.closingDate">{{(new Date(extendedPetition.closingDate) > new Date()) ? 'Closes' : 'Closed'}}</div>
                           </v-sheet>
                           <v-sheet>
                             {{new Date(extendedPetition.createdDate).toLocaleDateString("en-US", {year: 'numeric', month: 'long', day: 'numeric'})}}
@@ -113,6 +113,26 @@
           <v-expand-transition>
             <v-card v-show="expandSignatures" color="white" tile class="elevation-0">
               <v-container class="pa-8 pr-0">
+                <div v-if="hasSigned">
+                  <v-btn
+                    color="red"
+                    @click="signThisPetition(false)"
+                    :disabled="new Date(extendedPetition.closingDate) < new Date() || thisIsOurPetition"
+                  >
+                    <v-icon>delete</v-icon>Remove your signature
+                  </v-btn>
+                </div>
+                <div v-else>
+                  <v-btn
+                    color="green"
+                    @click="signThisPetition(true)"
+                    :disabled="new Date(extendedPetition.closingDate) < new Date()"
+                  >
+                    <v-icon>edit</v-icon>Sign this petition
+                  </v-btn>
+                </div>
+                <div v-if="new Date(extendedPetition.closingDate) < new Date()">This petition has closed</div>
+                <div v-if="thisIsOurPetition">Cannot remove signature from your own petition</div>
                 <v-list three-line height="350" class="scroll pl-8">
                   <template v-for="item in signatures">
                     <v-list-item :key="item.signedDate">
@@ -209,7 +229,10 @@ import {
   getPetitionPhotoUrl,
   getPetitionSignatures,
   CLIENT_URL,
-  deletePetition
+  deletePetition,
+  signPetition,
+  unSignPetition,
+  getUserInfo
 } from "../utils/requests";
 export default {
   props: ["petition"],
@@ -221,6 +244,7 @@ export default {
       permanent: false,
       extendedPetition: null,
       signatures: null,
+      hasSigned: false,
       photoUrl: "",
       authorPhotoUrl: "",
       petitionData: {},
@@ -249,6 +273,15 @@ export default {
       this.expandSignatures = !this.expandSignatures;
       if (this.signatures == null) {
         this.signatures = await getPetitionSignatures(this.petitionId);
+        for (let signature in this.signatures) {
+          if (
+            this.signatures[signature].signatoryId ==
+            localStorage.getItem("userId")
+          ) {
+            this.hasSigned = true;
+            break;
+          }
+        }
       }
     },
     imageFail: function(what) {
@@ -269,6 +302,37 @@ export default {
         if (result) {
           this.$router.push({ name: "yourProfile" });
         }
+      }
+    },
+    signThisPetition: async function(state) {
+      let status = false;
+      if (state) {
+        status = await signPetition(this.petitionId);
+        let ourProfile = await getUserInfo(localStorage.getItem("userId"));
+        this.petitionData.signatureCount++;
+        let newSignature = {
+          signatoryId: localStorage.getItem("userId"),
+          signedDate: new Date().toISOString(),
+          name: ourProfile.name,
+          city: ourProfile.city,
+          country: ourProfile.country
+        };
+        this.signatures.unshift(newSignature);
+      } else {
+        status = await unSignPetition(this.petitionId);
+        this.petitionData.signatureCount--;
+        for (let signature in this.signatures) {
+          if (
+            this.signatures[signature].signatoryId ==
+            localStorage.getItem("userId")
+          ) {
+            this.signatures.splice(signature, 1);
+            break;
+          }
+        }
+      }
+      if (status) {
+        this.hasSigned = state;
       }
     }
   },

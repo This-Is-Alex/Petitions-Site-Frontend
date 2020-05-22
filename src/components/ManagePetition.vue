@@ -82,6 +82,7 @@
                           </v-col>
                         </v-row>
                         <v-row justify="center">
+                          <v-btn @click="cancel()" v-if="editing" class="mr-2">Cancel</v-btn>
                           <v-btn
                             color="primary"
                             @click="createPetition()"
@@ -196,9 +197,9 @@ export default {
           petitionId = await Requests.createPetition(requestBody);
         }
 
-        if (petitionId == 'Error') {
-            this.submitting = false;
-            return;
+        if (petitionId == "Error") {
+          this.submitting = false;
+          return;
         }
 
         if (typeof this.file !== "string") {
@@ -206,14 +207,17 @@ export default {
         }
 
         if (!this.editing) {
-            await Requests.signPetition(petitionId);
+          await Requests.signPetition(petitionId);
         }
 
-        this.$router.push("/petition/"+petitionId);
+        this.$router.push("/petition/" + petitionId);
       } catch (err) {
         console.error(err);
       }
       this.submitting = false;
+    },
+    cancel: function() {
+      this.$router.push("/petition/"+ this.petitionId);
     }
   },
   mounted: async function() {
@@ -223,10 +227,10 @@ export default {
     }
 
     if (this.$route.params.petitionId) {
-      let petitionId = this.$route.params.petitionId;
+      this.petitionId = this.$route.params.petitionId;
       this.editing = true;
-      let petitionData = await Requests.getPetitionInfo(petitionId);
-      if (petitionData.petitionId == petitionId) {
+      let petitionData = await Requests.getPetitionInfo(this.petitionId);
+      if (petitionData.petitionId == this.petitionId) {
         if (petitionData.authorId != localStorage.getItem("userId")) {
           this.showError("You cannot edit somebody else's petition");
           this.editing = false;

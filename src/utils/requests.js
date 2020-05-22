@@ -14,6 +14,14 @@ instance.interceptors.request.use(function(config) {
     return config;
 });
 
+instance.interceptors.response.use((response) => {
+    return response;
+}, async(error) => {
+    let errorData = await Promise.resolve({ error });
+    errorData.status = errorData.error.response.status;
+    return errorData;
+});
+
 export async function getPetitions(params = {}) {
     try {
         params["count"] = 65536;
@@ -116,6 +124,20 @@ export async function register(requestBody) {
     }
 }
 
+export async function updateUser(requestBody) {
+    try {
+        let res = await instance.patch(`/users/${localStorage.getItem('userId')}`, requestBody);
+        if (res.status != 200) {
+            return res.statusText;
+        } else {
+            return true;
+        }
+    } catch (e) {
+        console.error(e);
+        return "A network error occured";
+    }
+}
+
 export async function createPetition(requestBody) {
     try {
         let res = await instance.post(`/petitions`, requestBody);
@@ -180,8 +202,8 @@ export async function logout() {
     }
 }
 
-export async function uploadProfilePhoto(userId, file) {
-    await uploadPhoto("/users/" + userId + "/photo", file);
+export async function uploadProfilePhoto(file) {
+    await uploadPhoto("/users/" + localStorage.getItem('userId') + "/photo", file);
 }
 
 export async function uploadPetitionPhoto(petitionId, file) {

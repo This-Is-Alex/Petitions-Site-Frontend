@@ -32,7 +32,7 @@
                         <div
                           v-if="userData.city || userData.country"
                         >From {{userData.city}}{{userData.city && userData.country ? ', ' : ''}} {{userData.country}}</div>
-                        <div>
+                        <div v-else>
                           <em>location unspecified</em>
                         </div>
                         <br />
@@ -106,7 +106,7 @@ export default {
   mounted: async function() {
     this.profilePhotoUrl = Requests.getUserPhotoUrl(
       localStorage.getItem("userId")
-    );
+    )+"?rand="+Math.random();
     this.getUser();
     this.getPetitions();
     this.updatePagination();
@@ -160,6 +160,9 @@ export default {
     },
     noProfilePhoto() {
       this.profilePhotoUrl = this.lazyPhoto;
+    },
+    editProfile() {
+      this.$router.push({name: "editProfile"});
     }
   }
 };
