@@ -12,7 +12,12 @@
           <v-toolbar-title>{{petitionData.title}}</v-toolbar-title>
           <v-spacer />
           <div style="text-align: right;">
-            <v-chip v-if="expanded && thisIsOurPetition" class="ml-2" light @click="deleteThisPetition()">
+            <v-chip
+              v-if="expanded && thisIsOurPetition"
+              class="ml-2"
+              light
+              @click="deleteThisPetition()"
+            >
               <v-icon class="mr-1">delete</v-icon>Delete
             </v-chip>
             <v-chip
@@ -123,7 +128,7 @@
                   <v-btn
                     color="red"
                     @click="signThisPetition(false)"
-                    :disabled="extendedPetition.closingDate && new Date(extendedPetition.closingDate) < new Date() || thisIsOurPetition"
+                    :disabled="!isSignedIn || (extendedPetition.closingDate && new Date(extendedPetition.closingDate)) < new Date() || thisIsOurPetition"
                   >
                     <v-icon>delete</v-icon>Remove your signature
                   </v-btn>
@@ -132,7 +137,7 @@
                   <v-btn
                     color="green"
                     @click="signThisPetition(true)"
-                    :disabled="extendedPetition.closingDate && new Date(extendedPetition.closingDate) < new Date()"
+                    :disabled="!isSignedIn || (extendedPetition.closingDate && new Date(extendedPetition.closingDate) < new Date())"
                   >
                     <v-icon>edit</v-icon>Sign this petition
                   </v-btn>
@@ -141,6 +146,7 @@
                   v-if="extendedPetition.closingDate && new Date(extendedPetition.closingDate) < new Date()"
                 >This petition has closed</div>
                 <div v-if="thisIsOurPetition">Cannot remove signature from your own petition</div>
+                <div v-if="!isSignedIn">Login to sign this petition</div>
                 <v-list three-line height="350" class="scroll pl-8">
                   <template v-for="item in signatures">
                     <v-list-item :key="item.signedDate">
@@ -258,6 +264,7 @@ export default {
       petitionData: {},
       shareMenu: false,
       thisIsOurPetition: false,
+      isSignedIn: false,
       lazyProfilePhoto:
         "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iZ3JheSIgd2lkdGg9IjE4cHgiIGhlaWdodD0iMThweCI+PHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bTAgM2MxLjY2IDAgMyAxLjM0IDMgM3MtMS4zNCAzLTMgMy0zLTEuMzQtMy0zIDEuMzQtMyAzLTN6bTAgMTQuMmMtMi41IDAtNC43MS0xLjI4LTYtMy4yMi4wMy0xLjk5IDQtMy4wOCA2LTMuMDggMS45OSAwIDUuOTcgMS4wOSA2IDMuMDgtMS4yOSAxLjk0LTMuNSAzLjIyLTYgMy4yMnoiLz48cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+PC9zdmc+",
       lazyPhoto:
@@ -281,14 +288,17 @@ export default {
       this.expandSignatures = !this.expandSignatures;
       if (this.signatures == null) {
         this.signatures = await getPetitionSignatures(this.petitionId);
-        for (let signature in this.signatures) {
-          if (
-            this.signatures[signature].signatoryId ==
-            localStorage.getItem("userId")
-          ) {
-            this.hasSigned = true;
-            break;
+        if (localStorage.getItem("userId") != null) {
+          for (let signature in this.signatures) {
+            if (
+              this.signatures[signature].signatoryId ==
+              localStorage.getItem("userId")
+            ) {
+              this.hasSigned = true;
+              break;
+            }
           }
+          this.isSignedIn = true;
         }
       }
     },
