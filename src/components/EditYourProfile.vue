@@ -13,7 +13,7 @@
                 <v-card-text class="pa-4">
                   <v-container>
                     <v-row justify="center">
-                      <v-col cols="12" sm="8">
+                      <v-col sm="12" md="11" lg="10">
                         <v-text-field
                           v-model="input.name"
                           :rules="[rules.required]"
@@ -23,7 +23,7 @@
                       </v-col>
                     </v-row>
                     <v-row justify="center">
-                      <v-col cols="12" sm="8">
+                      <v-col sm="12" md="11" lg="10">
                         <v-text-field
                           v-model="input.email"
                           :rules="[rules.required, rules.email]"
@@ -34,14 +34,14 @@
                     </v-row>
                     <v-divider />
                     <v-row justify="center">
-                      <v-col cols="12" sm="8">
+                      <v-col sm="12" md="11" lg="10">
                         <v-switch v-model="editingPassword" label="Change your password"></v-switch>
                       </v-col>
                     </v-row>
                     <v-expand-transition>
                       <div v-if="editingPassword">
                         <v-row justify="center">
-                          <v-col cols="12" sm="8">
+                          <v-col sm="12" md="11" lg="10">
                             <v-text-field
                               v-model="input.currentPassword"
                               label="Current password"
@@ -51,7 +51,7 @@
                           </v-col>
                         </v-row>
                         <v-row justify="center">
-                          <v-col cols="12" sm="8">
+                          <v-col sm="12" md="11" lg="10">
                             <v-text-field
                               v-model="input.password"
                               label="New password"
@@ -64,14 +64,14 @@
                     </v-expand-transition>
                     <v-divider />
                     <v-row justify="center">
-                      <v-col cols="12" sm="4">
+                      <v-col sm="12" md="5" lg="5">
                         <v-text-field
                           v-model="input.city"
                           label="City (optional)"
                           prepend-icon="location_city"
                         ></v-text-field>
                       </v-col>
-                      <v-col cols="12" sm="4">
+                      <v-col sm="12" md="6" lg="5">
                         <v-text-field
                           v-model="input.country"
                           label="Country (optional)"
@@ -80,7 +80,7 @@
                       </v-col>
                     </v-row>
                     <v-row justify="center">
-                      <v-col cols="12" sm="8">
+                      <v-col cols="8">
                         <v-file-input
                           accept="image/png, image/jpeg, image/gif"
                           placeholder="Pick a profile photo"
@@ -89,6 +89,9 @@
                           ref="filePicker"
                           @change="updatedProfilePhoto($event)"
                         ></v-file-input>
+                      </v-col>
+                      <v-col sm="4" md="3" lg="2">
+                        <v-btn outlined color="red" @click="deleteProfilePhoto()">Remove</v-btn>
                       </v-col>
                     </v-row>
                     <v-row justify="center">
@@ -212,6 +215,12 @@ export default {
     },
     cancel: function() {
       this.$router.push("/profile");
+    },
+    deleteProfilePhoto: async function() {
+      if (confirm('This will immediately delete your profile photo. Are you sure?')) {
+        await Requests.deleteProfilePhoto();
+        this.$root.$emit("authentication-change");
+      }
     }
   },
   mounted: async function() {

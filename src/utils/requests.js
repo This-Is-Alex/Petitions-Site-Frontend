@@ -199,11 +199,12 @@ export async function logout() {
     let res = await instance.post('/users/logout')
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
-    if (res.status === 200) {
-        return true;
-    } else {
-        return false;
-    }
+    return res.status == 200;
+}
+
+export async function deleteProfilePhoto() {
+    let res = await instance.delete("/users/" + localStorage.getItem('userId') + "/photo");
+    return res.status == 200;
 }
 
 export async function uploadProfilePhoto(file) {
