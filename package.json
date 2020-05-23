@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "axois": "0.0.1-security",
     "core-js": "^3.6.4",
     "vue": "^2.5.11",
     "vue-axios": "^2.1.5",
